@@ -10,27 +10,21 @@ from qiskit.visualization import plot_histogram, plot_bloch_multivector
 from math import sqrt, pi
 
 # %% [markdown]
-# #### find out how many qubits are needed
-
-# %%
-# Ask for range (0 - x).
-max_num = int(input('Choose x for a max range of  (0 - x)'))
-
-# Find out how many qubits are needed based on range.
-qubit_vals = [1]
-
-while sum(qubit_vals) < max_num:
-    qubit_vals.append(qubit_vals[-1] * 2)
-
-if sum(qubit_vals) > max_num:
-    qubit_vals.pop()
-
-n_qubits = len(qubit_vals)
-
-# %% [markdown]
 # #### create quantum circuit
 
 # %%
+# Get # of qubits for quantum circuit
+def get_qubits():
+    n = int(input('Chose how many qubits to include in the quantum circuit (limit: 5) -> '))
+    
+    if n > 6:
+        get_qubits()
+    else:
+        return n
+
+
+n_qubits = get_qubits()
+
 qc = QuantumCircuit(n_qubits, n_qubits)
 
 for i in range(n_qubits):
@@ -57,13 +51,16 @@ print('statevector ->', state)
 # #### show number produced.
 
 # %%
-state_reversed = state[::-1]
-num = 0
+def convert(state):
 
-for i_1, i_2 in zip(state_reversed, qubit_vals):
-    if int(i_1) == 1:
-        num += i_2
+    decimal, exponent  = (0, 1)
 
-print(num)
+    for bit in state:
+        decimal += int(bit) * (1/2) ** exponent
+        exponent += 1
+    
+    return decimal
+
+print(convert(state))
 
 
