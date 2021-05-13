@@ -5,9 +5,8 @@
 
 # %%
 from qiskit import QuantumCircuit, assemble, Aer, execute
+from qiskit.visualization import plot_bloch_multivector
 from qiskit_textbook.tools import array_to_latex
-from qiskit.visualization import plot_histogram, plot_bloch_multivector
-from math import sqrt, pi
 
 # %% [markdown]
 # #### create quantum circuit
@@ -22,8 +21,8 @@ def get_qubits():
     else:
         return n
 
-
 n_qubits = get_qubits()
+
 
 qc = QuantumCircuit(n_qubits, n_qubits)
 
@@ -45,10 +44,17 @@ simulator = Aer.get_backend('qasm_simulator')
 result = execute(qc, simulator, shots=1, memory=True).result()
 state = result.get_memory(qc)[0]
 
-print('statevector ->', state)
+print('state ->', state)
+
+# simulator = Aer.get_backend('statevector_simulator')
+
+# job = simulator.run(qobj)
+# statevector = job.result().get_statevector()
+
+# plot_bloch_multivector(statevector)
 
 # %% [markdown]
-# #### show number produced.
+# #### convert state to decimal
 
 # %%
 def convert(state):
@@ -56,11 +62,17 @@ def convert(state):
     decimal, exponent  = (0, 1)
 
     for bit in state:
-        decimal += int(bit) * (1/2) ** exponent
+        decimal += int(bit) * 2 ** -exponent
         exponent += 1
     
+    # NOTE: In the above for loop, we are converting the state to a number between 0 and 1.
+
     return decimal
 
 print(convert(state))
+
+# TODO: Learn how to convert statevector back to dirac notation.
+
+print(statevector)
 
 
