@@ -46,12 +46,27 @@ state = result.get_memory(qc)[0]
 
 print('state ->', state)
 
-# simulator = Aer.get_backend('statevector_simulator')
+statevectors = [
+    [1, 0],
+    [0, 1]
+]
 
-# job = simulator.run(qobj)
-# statevector = job.result().get_statevector()
+for i, qubit_state in enumerate(state):
+    qc.initialize(statevectors[int(qubit_state)], i)
 
-# plot_bloch_multivector(statevector)
+qc.draw()
+
+qobj = assemble(qc)
+
+# NOTE: The reason why we re-initialize the state as the result of the simulation
+#       is so that we can represent that state on a bloch sphere.
+
+simulator = Aer.get_backend('statevector_simulator')
+
+job = simulator.run(qobj)
+statevector = job.result().get_statevector()
+
+plot_bloch_multivector(statevector)
 
 # %% [markdown]
 # #### convert state to decimal
@@ -69,10 +84,14 @@ def convert(state):
 
     return decimal
 
-print(convert(state))
+print("random number", convert(state))
 
-# TODO: Learn how to convert statevector back to dirac notation.
+# %% [markdown]
+# #### visualize the statevector without bloch sphere
 
-print(statevector)
+# %%
+array_to_latex(statevector, pretext="statevector = ")
+
+# NOTE: The statevector is the tensor product of the combined states of all the qubits.
 
 
