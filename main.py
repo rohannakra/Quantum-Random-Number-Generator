@@ -4,7 +4,9 @@
 # #### imports
 
 # %%
-from qiskit import QuantumCircuit, assemble, Aer, execute
+from qiskit import QuantumCircuit, assemble, Aer, execute, IBMQ
+from qiskit.tools import job_monitor
+from qiskit.providers.ibmq import least_busy
 from qiskit.visualization import plot_bloch_multivector
 from qiskit_textbook.tools import array_to_latex
 
@@ -15,7 +17,7 @@ from qiskit_textbook.tools import array_to_latex
 # Get # of qubits for quantum circuit
 def get_qubits():
     n = int(input('Chose how many qubits to include in the quantum circuit (limit: 5) -> '))
-    
+
     if n > 6:
         get_qubits()
     else:
@@ -36,12 +38,25 @@ qobj = assemble(qc)
 qc.draw(output='mpl')
 
 # %% [markdown]
-# #### run on simulator
+# #### run circuit on quantum computer
 
 # %%
-simulator = Aer.get_backend('qasm_simulator')
+IBMQ.load_account()
 
-result = execute(qc, simulator, shots=1, memory=True).result()
+provider = IBMQ.get_provider('ibm-q')
+
+# Get least busy computer.
+qcomp = provider.get_backend('ibmq_athens')
+print('Running on', qcomp)
+
+# NOTE: To choose the best backend, check: https://quantum-computing.ibm.com/services?systems=yours
+
+# Run circuit.  
+job = execute(qc, backend=qcomp, memory=True)
+job_monitor(job)
+
+result = job.result()
+
 state = result.get_memory(qc)[0]
 
 print('state ->', state)
@@ -58,8 +73,8 @@ qc.draw()
 
 qobj = assemble(qc)
 
-# NOTE: The reason why we re-initialize the state as the result of the simulation
-#       is so that we can represent that state on a bloch sphere.
+# # NOTE: The reason why we re-initialize the state as the result of the simulation
+# #       is so that we can represent that state on a bloch sphere.
 
 simulator = Aer.get_backend('statevector_simulator')
 
@@ -85,13 +100,5 @@ def convert(state):
     return decimal
 
 print("random number", convert(state))
-
-# %% [markdown]
-# #### visualize the statevector without bloch sphere
-
-# %%
-array_to_latex(statevector, pretext="statevector = ")
-
-# NOTE: The statevector is the tensor product of the combined states of all the qubits.
 
 
