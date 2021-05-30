@@ -11,25 +11,25 @@ from qiskit.visualization import plot_bloch_multivector
 from qiskit_textbook.tools import array_to_latex
 
 import numpy as np
+from plyer import notification
 
 # %% [markdown]
 # #### create quantum circuit
 
 # %%
 # Get # of qubits for quantum circuit and range of random num
-def init_gen(n_qubits, _min, _max):
+def init_gen():
+    n_qubits = int(input('Choose # of qubits (limit: 5) -> '))
+    _min = int(input('Choose min'))
+    _max = int(input('Choose max'))
+
     if n_qubits > 6:
         init_gen()
     else:
         return n_qubits, _min, _max
 
 
-n_qubits, _min, _max = init_gen(
-    int(input('Choose # of qubits (limit: 5) -> ')),
-    int(input('Choose min')),
-    int(input('Choose max'))
-)
-
+n_qubits, _min, _max = init_gen()
 
 qc = QuantumCircuit(n_qubits, n_qubits)
 
@@ -88,23 +88,28 @@ statevector = job.result().get_statevector(qc)
 
 plot_bloch_multivector(statevector)
 
-# TODO: Add notify to this.
+
+notification.notify(
+    title='Quantum Circuit Sim Results',
+    message=f'state -> {state}',
+    app_icon='qiskit_icon.ico'
+)
 
 # %% [markdown]
 # #### convert statevector to random number
 
 # %%
-# Maps one range to another
-def real_map(value, leftMin, leftMax, rightMin, rightMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = rightMax - rightMin
+# Produce random number based on the results from experiment.
+def real_map(value, left_min, left_max, right_min, right_max):
+    # Figure out how 'wide' each range is.
+    left_span = left_max - left_min
+    right_span = right_max - right_min
 
     # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
+    value_scaled = float(value - left_min) / float(left_span)
 
     # Convert the 0-1 range into a value in the right range.
-    return rightMin + (valueScaled * rightSpan)
+    return right_min + (value_scaled * right_span)
 
 n1, n2, n3 = (0, 0, 0)
 for i in range(statevector.size):
@@ -113,6 +118,14 @@ for i in range(statevector.size):
         n2 = np.real(statevector[i])
         n3 = np.imag(statevector[i])
 
-print(real_map(n1+n2+n3, -n_qubits, len(statevector)-1+n_qubits, _min, _max))
+print(
+    real_map(
+        n1 + n2+ n3,
+        -n_qubits,
+        len(statevector) - 1 + n_qubits,
+        _min,
+        _max
+    )
+)
 
 
