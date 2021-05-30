@@ -10,20 +10,25 @@ from qiskit.providers.ibmq import least_busy
 from qiskit.visualization import plot_bloch_multivector
 from qiskit_textbook.tools import array_to_latex
 
+import numpy as np
+
 # %% [markdown]
 # #### create quantum circuit
 
 # %%
-# Get # of qubits for quantum circuit
-def get_qubits():
-    n = int(input('Chose how many qubits to include in the quantum circuit (limit: 5) -> '))
-
-    if n > 6:
-        get_qubits()
+# Get # of qubits for quantum circuit and range of random num
+def init_gen(n_qubits, _min, _max):
+    if n_qubits > 6:
+        init_gen()
     else:
-        return n
+        return n_qubits, _min, _max
 
-n_qubits = get_qubits()
+
+n_qubits, _min, _max = init_gen(
+    int(input('Choose # of qubits (limit: 5) -> ')),
+    int(input('Choose min')),
+    int(input('Choose max'))
+)
 
 
 qc = QuantumCircuit(n_qubits, n_qubits)
@@ -79,26 +84,35 @@ qobj = assemble(qc)
 simulator = Aer.get_backend('statevector_simulator')
 
 job = simulator.run(qobj)
-statevector = job.result().get_statevector()
+statevector = job.result().get_statevector(qc)
 
 plot_bloch_multivector(statevector)
 
+# TODO: Add notify to this.
+
 # %% [markdown]
-# #### convert state to decimal
+# #### convert statevector to random number
 
 # %%
-def convert(state):
+# Maps one range to another
+def real_map(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
 
-    decimal, exponent  = (0, 1)
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
 
-    for bit in state:
-        decimal += int(bit) * 2 ** -exponent
-        exponent += 1
-    
-    # NOTE: In the above for loop, we are converting the state to a number between 0 and 1.
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 
-    return decimal
+n1, n2, n3 = (0, 0, 0)
+for i in range(statevector.size):
+    if abs(statevector[i]) != 0:
+        n1 = i
+        n2 = np.real(statevector[i])
+        n3 = np.imag(statevector[i])
 
-print("random number", convert(state))
+print(real_map(n1+n2+n3, -n_qubits, len(statevector)-1+n_qubits, _min, _max))
 
 
