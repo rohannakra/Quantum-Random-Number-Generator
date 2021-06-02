@@ -4,14 +4,17 @@
 # #### imports
 
 # %%
+# Import qiskit modules.
 from qiskit import QuantumCircuit, assemble, Aer, execute, IBMQ
 from qiskit.tools import job_monitor
 from qiskit.providers.ibmq import least_busy
 from qiskit.visualization import plot_bloch_multivector
 from qiskit_textbook.tools import array_to_latex
 
+# Import other modules.
 import numpy as np
 from plyer import notification
+from time import time
 
 # %% [markdown]
 # #### create quantum circuit
@@ -50,6 +53,8 @@ IBMQ.load_account()
 
 provider = IBMQ.get_provider('ibm-q')
 
+start_time = time()
+
 # Get least busy computer.
 qcomp = provider.get_backend('ibmq_athens')
 print('Running on', qcomp)
@@ -63,8 +68,10 @@ job_monitor(job)
 result = job.result()
 
 state = result.get_memory(qc)[0]
+elapsed = (time() - start_time)/60
 
 print('state ->', state)
+print(f'elapsed -> {elapsed:.2f} min.')
 
 statevectors = [
     [1, 0],
@@ -91,7 +98,7 @@ plot_bloch_multivector(statevector)
 
 notification.notify(
     title='Quantum Circuit Sim Results',
-    message=f'state -> {state}',
+    message=f'elapsed -> {elapsed:.2f} min.\nstate -> {state}',
     app_icon='qiskit_icon.ico'
 )
 
