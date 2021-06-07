@@ -112,7 +112,7 @@ def real_map(value, left_min, left_max, right_min, right_max):
     left_span = left_max - left_min
     right_span = right_max - right_min
 
-    # Convert the left range into a 0-1 range (float)
+    # Convert the left range into a 0-1 range (float) NOTE: This is the equation that finalizes the num.
     value_scaled = float(value - left_min) / float(left_span)
 
     # Convert the 0-1 range into a value in the right range.
