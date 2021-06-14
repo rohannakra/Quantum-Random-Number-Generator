@@ -55,8 +55,11 @@ provider = IBMQ.get_provider('ibm-q')
 
 start_time = time()
 
+# Get the computers with amount of qubits.
+qcomp = provider.backends(filters=lambda x: x.configuration().n_qubits >= n_qubits, simulator=False)
+
 # Get least busy computer.
-qcomp = provider.get_backend('ibmq_athens')
+qcomp = least_busy(qcomp)
 print('Running on', qcomp)
 
 # NOTE: To choose the best backend, check: https://quantum-computing.ibm.com/services?systems=yours
